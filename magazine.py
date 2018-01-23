@@ -21,7 +21,7 @@ def article_is_not_db(article_title, article_date):
         True if the article is not in the database
         False if the article is already present in the database
     """
-    db.execute(f"SELECT * from magazine WHERE title='{article_title}' AND date='{article_date}'")
+    db.execute("SELECT * from magazine WHERE title=? AND date=?", (article_title, article_date))
     if not db.fetchall():
         return True
     else:
@@ -34,7 +34,7 @@ def add_article_to_db(article_title, article_date):
         article_title (str): The title of an article
         article_date (str): The publication date of an article
     """
-    db.execute(f"INSERT INTO magazine VALUES ('{article_title}', '{article_date}')")
+    db.execute("INSERT INTO magazine VALUES (?, ?)", (article_title, article_date))
     db_connection.commit()
 
 
