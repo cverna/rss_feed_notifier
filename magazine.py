@@ -74,7 +74,7 @@ def send_telegram_notification(article_title, article_url):
         https = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         r = https.request('GET', 'https://api.telegram.org/bot'
                         + bot_id + '/sendMessage?chat_id='
-                        + chat_id + '&text=' + article_title + ' ' + article_url)
+                        + chat_id + '&text=' + article_title + article_url)
     except urllib3.exceptions.SSLError as err:
         print('[ERROR] Telegram SSL error', err)
         sys.exit()
