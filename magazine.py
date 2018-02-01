@@ -1,9 +1,11 @@
 #!/usr/bin/python3
+import sys
+import urllib3
+import certifi
 import sqlite3
 import smtplib
-from email.mime.text import MIMEText
-
 import feedparser
+from email.mime.text import MIMEText
 
 
 db_connection = sqlite3.connect('magazine_rss.sqlite')
@@ -39,8 +41,7 @@ def add_article_to_db(article_title, article_date):
 
 
 def send_notification(article_title, article_url):
-    """ Add a new article title and date to the database
-
+    """ Send a notification email
     Args:
         article_title (str): The title of an article
         article_url (str): The url to access the article
@@ -58,12 +59,36 @@ def send_notification(article_title, article_url):
     smtp_server.quit()
 
 
+def send_telegram_notification(article_title, article_url):
+    """ Send a notification message to a Telegram chat
+    using your own bot
+    Docs: https://core.telegram.org/bots
+    Args:
+        article_title (str): The title of an article
+        article_url (str): The url to access the article
+    """
+    bot_id = ''
+    chat_id = ''
+
+    try:
+        https = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
+        r = https.request('GET', 'https://api.telegram.org/bot'
+                        + bot_id + '/sendMessage?chat_id='
+                        + chat_id + '&text=' + article_title + ' ' + article_url)
+    except urllib3.exceptions.SSLError as err:
+        print('[ERROR] Telegram SSL error', err)
+        sys.exit()
+
+
 def read_article_feed():
     """ Get articles from RSS feed """
     feed = feedparser.parse('https://fedoramagazine.org/feed/')
     for article in feed['entries']:
         if article_is_not_db(article['title'], article['published']):
+            ### Email notification
             send_notification(article['title'], article['link'])
+            ### Telegram notification
+            #send_telegram_notification(article['title'], article['link'])
             add_article_to_db(article['title'], article['published'])
 
 
